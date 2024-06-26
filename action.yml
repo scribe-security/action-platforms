@@ -27,9 +27,11 @@ runs:
   image: docker://scribesecurity/platforms:dev-latest
   args:
     - ${{ inputs.command }}
-    - ${{ inputs.valint_args }}
+    - ${{ inputs.valint_args }}${{ inputs.valint_args }}
     - ${{ inputs.platform }}
     - ${{ inputs.args }} 
+  
+
 branding:
   icon: shield
   color: green
