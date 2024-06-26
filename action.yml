@@ -19,7 +19,7 @@ runs:
   using: docker
   image: docker://scribesecurity/platforms:dev-latest
   args:
-    - ${{ format('[{0}]', inputs.cmd) }}
+    - ${{ fromJson(format('[{0}]', inputs.cmd)) }}
 branding:
   icon: shield
   color: green
