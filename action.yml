@@ -5,9 +5,11 @@ inputs:
   command:
     description: Command to run
     required: true
+  platform:
+    description: Select Platform
+    required: true
   args:
     description: "Additional arguments to pass to Platforms"
-    required: true
   log-level:
     description: Log verbosity level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
   log-file:
@@ -22,8 +24,8 @@ runs:
   using: docker
   image: docker://scribesecurity/platforms:dev-latest
   args:
-    - platforms
     - ${{ inputs.command }}
+    - ${{ inputs.platform }}
     - ${{ inputs.args }} 
 branding:
   icon: shield
