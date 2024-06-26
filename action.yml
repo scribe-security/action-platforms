@@ -2,8 +2,11 @@ name: Scribe Platforms CLI Action
 description: Scan, collect and verifies evidence from Supply chain platforms.
 author: Mikey Strauss
 inputs:
-  cmd:
+  command:
     description: Command to run
+    required: true
+  args:
+    description: "Additional arguments to pass to Platforms"
     required: true
   log-level:
     description: Log verbosity level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
@@ -19,7 +22,9 @@ runs:
   using: docker
   image: docker://scribesecurity/platforms:dev-latest
   args:
-    - ${{ fromJson(format('[{0}]', inputs.cmd)) }}
+    - platforms
+    - ${{ inputs.command }}
+    - ${{ inputs.args }} 
 branding:
   icon: shield
   color: green
