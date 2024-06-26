@@ -5,6 +5,8 @@ inputs:
   command:
     description: Command to run
     required: true
+  valint_args:
+    description: Valint args
   platform:
     description: Select Platform
     required: true
@@ -25,6 +27,7 @@ runs:
   image: docker://scribesecurity/platforms:dev-latest
   args:
     - ${{ inputs.command }}
+    - ${{ inputs.valint_args }}
     - ${{ inputs.platform }}
     - ${{ inputs.args }} 
 branding:
