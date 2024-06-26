@@ -19,11 +19,6 @@ runs:
   using: docker
   image: docker://scribesecurity/platforms:dev-latest
   args:
-    - ${{ inputs.log-level && '--log-level=' }}${{ inputs.log-level }}
-    - ${{ inputs.log-file && '--log-file=' }}${{ inputs.log-file }}
-    - ${{ inputs.config && '--config=' }}${{ inputs.config }}
-    - ${{ inputs.print-config && '--print-config=' }}${{ inputs.print-config }}
-    - ${{ inputs.db-local-path && '--db-local-path=' }}${{ inputs.db-local-path }}
     - ${{ inputs.cmd }}
 branding:
   icon: shield
