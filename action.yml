@@ -1,0 +1,30 @@
+name: Scribe Platforms CLI Action
+description: Scan, collect and verifies evidence from Supply chain platforms.
+author: Mikey Strauss
+inputs:
+  cmd:
+    description: Command to run
+    required: true
+  log-level:
+    description: Log verbosity level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
+  log-file:
+    description: Log file path
+  config:
+    description: Path to a configuration file
+  print-config:
+    description: Print the configuration after applying all other arguments and exit
+  db-local-path:
+    description: Local db path
+runs:
+  using: docker
+  image: docker://scribesecurity/platforms:dev-latest
+  args:
+    - ${{ inputs.log-level && '--log-level=' }}${{ inputs.log-level }}
+    - ${{ inputs.log-file && '--log-file=' }}${{ inputs.log-file }}
+    - ${{ inputs.config && '--config=' }}${{ inputs.config }}
+    - ${{ inputs.print-config && '--print-config=' }}${{ inputs.print-config }}
+    - ${{ inputs.db-local-path && '--db-local-path=' }}${{ inputs.db-local-path }}
+    - ${{ inputs.cmd }}
+branding:
+  icon: shield
+  color: green
