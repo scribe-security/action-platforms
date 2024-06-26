@@ -7,6 +7,8 @@ inputs:
     required: true
   valint_args:
     description: Valint args
+  sign:
+    description: Sign evidence
   platform:
     description: Select Platform
     required: true
@@ -28,6 +30,7 @@ runs:
   args:
     - ${{ inputs.command }}
     - ${{ inputs.valint_args }}
+    - ${{ inputs.sign && '--valint.sign' }}
     - ${{ inputs.platform }}
     - ${{ inputs.args }} 
   
