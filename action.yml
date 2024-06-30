@@ -32,6 +32,7 @@ runs:
     - ${{ inputs.valint_args }}
     - ${{ inputs.sign && '--valint.sign' }}
     - --valint.context-type=github
+    - ${{ inputs.command != "discover" && '--valint.context-type=github'}}
     - ${{ inputs.platform }}
     - ${{ inputs.args }} 
   
