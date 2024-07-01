@@ -2,9 +2,18 @@ name: Scribe Platforms CLI Action
 description: Scan, collect and verifies evidence from Supply chain platforms.
 author: Mikey Strauss
 inputs:
-  cmd:
+  command:
     description: Command to run
     required: true
+  valint_args:
+    description: Valint args
+  sign:
+    description: Sign evidence
+  platform:
+    description: Select Platform
+    required: true
+  args:
+    description: "Additional arguments to pass to Platforms"
   log-level:
     description: Log verbosity level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
   log-file:
@@ -17,14 +26,16 @@ inputs:
     description: Local db path
 runs:
   using: docker
-  image: docker://scribesecurity/platforms:dev-latest
+  image: docker://scribesecurity/platforms:v0.1.0
   args:
-    - ${{ inputs.log-level && '--log-level=' }}${{ inputs.log-level }}
-    - ${{ inputs.log-file && '--log-file=' }}${{ inputs.log-file }}
-    - ${{ inputs.config && '--config=' }}${{ inputs.config }}
-    - ${{ inputs.print-config && '--print-config=' }}${{ inputs.print-config }}
-    - ${{ inputs.db-local-path && '--db-local-path=' }}${{ inputs.db-local-path }}
-    - ${{ inputs.cmd }}
+    - ${{ inputs.command }}
+    - ${{ inputs.valint_args }}
+    - ${{ inputs.sign && '--valint.sign' }}
+    - ${{ inputs.command != 'discover' && '--valint.context-type=github' || '' }}
+    - ${{ inputs.platform }}
+    - ${{ inputs.args }} 
+  
+
 branding:
   icon: shield
   color: green
