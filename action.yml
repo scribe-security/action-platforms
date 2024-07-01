@@ -26,7 +26,7 @@ inputs:
     description: Local db path
 runs:
   using: docker
-  image: docker://scribesecurity/platforms:dev-latest
+  image: docker://scribesecurity/platforms:v0.1.0
   args:
     - ${{ inputs.command }}
     - ${{ inputs.valint_args }}
