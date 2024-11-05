@@ -24,15 +24,18 @@ inputs:
     description: Print the configuration after applying all other arguments and exit
   db-local-path:
     description: Local db path
+  external-evidence:
+    description: Enable External evidence
 runs:
   using: docker
-  image: docker://scribesecurity/platforms:latest
+  image: docker://scribesecurity/platforms:SH-6474-merged-command
   env:
     AUTO_FIX_ARGS: true
   args:
     - ${{ inputs.command }}
     - ${{ inputs.valint_args }}
     - ${{ inputs.sign && '--valint.sign' }}
+    - ${{ inputs.external-evidence && '--external-evidence' }}
     - ${{ inputs.command != 'discover' && '--valint.context-type=github' || '' }}
     - ${{ inputs.platform }}
     - ${{ inputs.args }} 
