@@ -35,7 +35,7 @@ runs:
     - ${{ inputs.command }}
     - ${{ inputs.valint_args }}
     - ${{ inputs.sign && '--valint.sign' }}
-    - ${{ inputs.evidence == 'true' && '--export-evidence' }}
+    - ${{ inputs.evidence == 'true' && '--export-evidence' || '' }}
     - ${{ inputs.command != 'discover' && '--valint.context-type=github' || '' }}
     - ${{ inputs.platform }}
     - ${{ inputs.args }} 
