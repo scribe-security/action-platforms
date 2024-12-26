@@ -24,6 +24,8 @@ inputs:
     description: Print the configuration after applying all other arguments and exit
   db-local-path:
     description: Local db path
+  evidence:
+    description: Export evidence
 runs:
   using: docker
   image: docker://scribesecurity/platforms:dev-latest
@@ -33,6 +35,7 @@ runs:
     - ${{ inputs.command }}
     - ${{ inputs.valint_args }}
     - ${{ inputs.sign && '--valint.sign' }}
+    - ${{ inputs.evidence == 'true' && '--export-evidence' || '' }}
     - ${{ inputs.command != 'discover' && '--valint.context-type=github' || '' }}
     - ${{ inputs.platform }}
     - ${{ inputs.args }} 
