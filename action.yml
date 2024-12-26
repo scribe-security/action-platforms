@@ -28,7 +28,7 @@ inputs:
     description: Export evidence
 runs:
   using: docker
-  image: docker://scribesecurity/platforms:SH-6474-merged-command
+  image: docker://scribesecurity/platforms:dev-latest
   env:
     AUTO_FIX_ARGS: true
   args:
