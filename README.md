@@ -1,10 +1,5 @@
----
-sidebar_label: "Platforms Github Integration"
-title: Scribe Platforms CLI Action
-sidebar_position: 2
-toc_min_heading_level: 2
-toc_max_heading_level: 5
----
+
+# Platforms Action
 
 Scribe offers the use of GitHub Actions to enable the embedding of evidence collection and integrity validation into your pipeline as a way to help secure your software supply chain.
 
@@ -38,11 +33,12 @@ Further documentation **[Platforms integration](../../../platforms/overview)**.
 
 ### Usage
 ```yaml
-- name: Discover k8s assets
+- name: Platform usage example
   uses: scribe-security/action-platforms@master
   with:
-    cmd: [discover, evidence, bom, verify]
+    command: [discover, evidence, bom, verify]
     platform: [k8s, dockerhub, gitlab, github]
+    args: [FLAGS]
 ```
 
 ## Setting Secret Flags
@@ -55,6 +51,7 @@ Platforms CLI supports passing secrets as environment variables:
 - `VALINT_OUTPUT_DIRECTORY`: Set evidence local cache directory.
 - `PLATFORMS_DB_PATH`: Set platforms database path.
 - `GITHUB_TOKEN`: Set GitHub discovery access.
+- `JFROG_TOKEN`: Set Jfrog discovery access.
 - `DOCKERHUB_USERNAME`, `DOCKERHUB_PASSWORD`: Set DockerHub discovery access.
 - `K8S_URL`, `K8S_TOKEN`: Set Kubernetes discovery access.
 - `GITLAB_TOKEN`: Set GitLab discovery access.
@@ -77,8 +74,8 @@ env:
   LOG_LEVEL: "INFO"
   VALINT_SCRIBE_ENABLE: true 
   DOCKER_DRIVER: overlay2
+  DOCKER_CONFIG: $HOME/.docker
   DOCKERHUB_USERNAME: scribesecurity
-  DEBUG: false
   SCRIBE_PRODUCT_VERSION: "v0.0.2-github"
 
 jobs:
@@ -103,7 +100,7 @@ jobs:
             github-platforms-db
 
       - name: Discovery Github
-        uses: scribe-security/action-platforms@dev
+        uses: scribe-security/action-platforms@master
         with:
           command: discover
           platform: github
@@ -113,7 +110,7 @@ jobs:
             --workflow.skip --commit.skip --scope.branch=main
             
       - name: Evidence Github
-        uses: scribe-security/action-platforms@dev
+        uses: scribe-security/action-platforms@master
         with:
           command: evidence
           sign: true
@@ -130,7 +127,7 @@ jobs:
 </details>
 
 <details>
-<summary> Kubernetes Platform Example </summary>
+<summary> Dockerhub Platform Example </summary>
 
 ```yaml
 on:
@@ -142,13 +139,11 @@ concurrency:
 
 env:
   PLATFORMS_VERSION: "latest"
-  K8S_URL: https://my_cluster.com # K8s discovery URL
-  K8S_TOKEN: ${{ secrets.INTEGRATION_K8S_TOKEN }}
   LOG_LEVEL: "INFO"
   VALINT_SCRIBE_ENABLE: true 
   DOCKER_DRIVER: overlay2
+  DOCKER_CONFIG: $HOME/.docker
   DOCKERHUB_USERNAME: scribesecurity
-  DEBUG: false
   SCRIBE_PRODUCT_VERSION: "v0.0.2-github"
 
 jobs:
@@ -165,14 +160,14 @@ jobs:
     steps:
 
         - name: Discovery Dockerhub
-          uses: scribe-security/action-platforms@dev
+          uses: scribe-security/action-platforms@master
           with:
             command: discover
             platform: dockerhub
             args: --scope.past_days=60
   
         - name: Evidence Dockerhub
-          uses: scribe-security/action-platforms@dev
+          uses: scribe-security/action-platforms@master
           with:
             command: evidence
             sign: true
@@ -218,7 +213,7 @@ jobs:
               evidence-dockerhub
 
         - name: BOM Dockerhub
-          uses: scribe-security/action-platforms@dev
+          uses: scribe-security/action-platforms@master
           with:
             command: bom
             platform: dockerhub
@@ -254,7 +249,7 @@ jobs:
             key: evidence-dockerhub
 
         - name: Policy Dockerhub
-          uses: scribe-security/action-platforms@dev
+          uses: scribe-security/action-platforms@master
           with:
             command: verify
             platform: dockerhub
@@ -268,8 +263,144 @@ jobs:
 
 </details>
 
+
+
 <details>
-<summary> Dockerhub Platform Example </summary>
+<summary> Jfrog Platform Example </summary>
+
+```yaml
+on:
+  workflow_dispatch:
+
+concurrency: 
+  group: github-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PLATFORMS_VERSION: "latest"
+  LOG_LEVEL: "INFO"
+  VALINT_SCRIBE_ENABLE: true 
+  DOCKER_DRIVER: overlay2
+  DOCKER_CONFIG: $HOME/.docker
+  DOCKERHUB_USERNAME: scribesecurity
+  SCRIBE_PRODUCT_VERSION: "v0.0.2-github"
+  JFROG_URL: https://mycompany.jfrog.io
+
+jobs:
+ discovery_jfrog:
+    runs-on: ubuntu-latest
+    env:
+      ATTEST_KEY: ${{ secrets.ATTEST_KEY }}
+      ATTEST_CERT: ${{ secrets.ATTEST_CERT }}
+      ATTEST_CA: ${{ secrets.ATTEST_CA }}
+      JFROG_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
+      VALINT_OUTPUT_DIRECTORY: evidence/jfrog
+      SCRIBE_TOKEN: ${{ secrets.GH_CI_TEST_SCRIBE_SECRET }}
+      SCRIBE_CLIENT_SECRET: ${{ secrets.GH_CI_TEST_SCRIBE_SECRET }}
+      PLATFORMS_DB_PATH: jfrog.platforms.db
+    steps:
+
+        - name: Discovery Jfrog
+          uses: scribe-security/action-platforms@master
+          with:
+            command: discover
+            platform: jfrog
+            args: --scope.tag_limit 2
+  
+        - name: Evidence Jfrog
+          uses: scribe-security/action-platforms@main
+          with:
+            command: evidence
+            sign: true
+            platform: jfrog
+            args: |
+             --jf-repository.mapping
+              *::flask-monorepo-project::${{ env.SCRIBE_PRODUCT_VERSION }}
+              --repository.mapping
+              *stub*::flask-monorepo-project::${{ env.SCRIBE_PRODUCT_VERSION }}
+
+        - name: Upload DB artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: ${{ env.PLATFORMS_DB_PATH }}
+            path: ${{ env.PLATFORMS_DB_PATH }}
+
+
+  bom_sign_jfrog:
+    runs-on: ubuntu-latest
+    needs: [discovery_jfrog]
+    env:
+      ATTEST_KEY: ${{ secrets.ATTEST_KEY }}
+      ATTEST_CERT: ${{ secrets.ATTEST_CERT }}
+      ATTEST_CA: ${{ secrets.ATTEST_CA }}
+      VALINT_OUTPUT_DIRECTORY: evidence/jfrog
+      SCRIBE_TOKEN: ${{ secrets.GH_CI_TEST_SCRIBE_SECRET }}
+      PLATFORMS_DB_PATH: jfrog.platforms.db
+    steps:
+        - name: Download DB artifact
+          uses: actions/download-artifact@v4
+          with:
+            name: ${{ env.PLATFORMS_DB_PATH }}
+
+        - name: Cache Jfrog Evidence
+          uses: actions/cache@v4
+          with:
+            path: evidence/jfrog
+            key: evidence-jfrog-${{ hashFiles('evidence/jfrog/cache.json') }}
+            restore-keys: |
+              evidence-jfrog-
+              evidence-jfrog
+
+        - name: BOM Jfrog
+          uses: scribe-security/action-platforms@master
+          with:
+            command: bom
+            platform: jfrog
+            valint_args: --allow-failures
+            sign: true
+            args: >-
+              --image.mapping
+                *stub*::flask-monorepo-project::${{ env.SCRIBE_PRODUCT_VERSION }}
+              --exclude.repository *stub_remote_empty*
+  policy_jfrog:
+    runs-on: ubuntu-latest
+    needs: [bom_sign_jfrog]
+    env:
+      ATTEST_KEY: ${{ secrets.ATTEST_KEY }}
+      ATTEST_CERT: ${{ secrets.ATTEST_CERT }}
+      ATTEST_CA: ${{ secrets.ATTEST_CA }}
+      VALINT_OUTPUT_DIRECTORY: evidence/jfrog
+      SCRIBE_TOKEN: ${{ secrets.GH_CI_TEST_SCRIBE_SECRET }}
+      PLATFORMS_DB_PATH: jfrog.platforms.db
+    steps:
+
+        - name: Download DB artifact
+          uses: actions/download-artifact@v4
+          with:
+            name: ${{ env.PLATFORMS_DB_PATH }}
+  
+        - name: Cache Jfrog Evidence
+          uses: actions/cache@v4
+          with:
+            path: evidence/jfrog
+            key: evidence-jfrog
+
+        - name: Policy Jfrog
+          uses: scribe-security/action-platforms@dev
+          with:
+            command: verify
+            platform: jfrog
+            valint_args: --valint.git-branch main
+            sign: true
+            args: >-
+              --image.mapping
+                *stub*::flask-monorepo-project::${{ env.SCRIBE_PRODUCT_VERSION }}
+              --exclude.repository *stub_remote_empty*
+```
+</details>
+
+<details>
+<summary> Kubernetes Platform Example </summary>
 
 ```yaml
 on:
@@ -286,8 +417,7 @@ env:
   LOG_LEVEL: "INFO"
   VALINT_SCRIBE_ENABLE: true 
   DOCKER_DRIVER: overlay2
-  DOCKERHUB_USERNAME: scribesecurity
-  DEBUG: false
+  DOCKER_CONFIG: $HOME/.docker
   SCRIBE_PRODUCT_VERSION: "v0.0.2-github"
 
 jobs:
@@ -303,13 +433,13 @@ jobs:
       PLATFORMS_DB_PATH: k8s.platforms.db
     steps:
         - name: Discover K8S
-          uses: scribe-security/action-platforms@dev
+          uses: scribe-security/action-platforms@master
           with:
             command: discover
             platform: k8s
 
         - name: Evidence K8S
-          uses: scribe-security/action-platforms@dev
+          uses: scribe-security/action-platforms@master
           with:
             command: evidence
             sign: true
@@ -352,7 +482,7 @@ jobs:
             key: evidence-k8s
 
         - name: BOM K8s
-          uses: scribe-security/action-platforms@dev
+          uses: scribe-security/action-platforms@master
           with:
             command: bom
             platform: k8s
@@ -391,7 +521,7 @@ jobs:
               evidence-k8s
 
         - name: Policy K8s
-          uses: scribe-security/action-platforms@dev
+          uses: scribe-security/action-platforms@master
           with:
             command: verify
             platform: k8s
@@ -404,6 +534,157 @@ jobs:
 ```
 
 </details>
+
+<details>
+<summary> ECR Platform Example </summary>
+
+```yaml
+on:
+  workflow_dispatch:
+
+concurrency: 
+  group: github-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PLATFORMS_VERSION: "latest"
+  LOG_LEVEL: "INFO"
+  VALINT_SCRIBE_ENABLE: true 
+  DOCKER_DRIVER: overlay2
+  DOCKER_CONFIG: $HOME/.docker
+  SCRIBE_PRODUCT_VERSION: "v0.0.2-github"
+  AWS_ACCESS_KEY_ID: $AWS_TEST_KEY_ID
+  AWS_SECRET_ACCESS_KEY: $AWS_TEST_ACCESS_KEY
+  AWS_REGION: "us-west-2"
+  ECR_API_BASE_URL: ****.dkr.ecr.$AWS_REGION.amazonaws.com
+  ECR_URL: https://$ECR_API_BASE_URL
+
+jobs:
+  discovery-ecr:
+    stage: discovery
+    image:
+        name: scribesecurity/platforms:${PLATFORMS_VERSION}
+        entrypoint: [""]
+        pull_policy: always
+    cache:
+      - key: ecr.platforms.db
+        paths:
+        - ecr.platforms.db
+      - key: evidence-ecr-discovery
+        paths:
+        - evidence/ecr-discovery
+    before_script:
+        - *show_versions
+        - *init_signing_keys
+        - export PLATFORMS_DB_PATH=ecr.platforms.db
+        - export VALINT_OUTPUT_DIRECTORY=evidence/ecr-discovery
+        - export VALINT_SCRIBE_ENABLE=true
+        - export LOG_LEVEL=DEBUG
+    script:
+        - |
+          export ECR_LOGIN_TOKEN=$(aws ecr get-login-password --region $AWS_REGION)
+          
+        - |
+          platforms discover ecr \
+              --scope.past_days 60
+      
+        - |
+          platforms evidence \
+              --valint.sign \
+              ecr \
+              --repository.mapping \
+                *scribe-service*::scribe-service::${SCRIBE_PRODUCT_VERSION}
+
+
+  bom-sign-ecr:
+    stage: bom-sign
+    needs: ["discovery-ecr"]
+    timeout: 5 hours
+    image:
+        name: scribesecurity/platforms:${PLATFORMS_VERSION}
+        entrypoint: [""]
+        pull_policy: always
+    services:
+      - docker:dind
+    cache:
+      - key: ecr.platforms.db
+        paths:
+        - ecr.platforms.db
+      - key: evidence-ecr
+        paths:
+        - evidence/ecr
+    before_script:
+        - *show_versions
+        - *init_signing_keys
+        - *fs-info
+        - *cleanup-docker-cache
+        - *fs-info
+        - export PLATFORMS_DB_PATH=ecr.platforms.db
+        - export VALINT_OUTPUT_DIRECTORY=evidence/ecr
+        - export LOG_LEVEL=DEBUG
+        - export VALINT_LOG_LEVEL=debug
+    after_script:
+        - *cleanup-docker-cache
+    script:
+        - |
+          export ECR_LOGIN_TOKEN=$(aws ecr get-login-password --region $AWS_REGION)
+          echo $ECR_LOGIN_TOKEN | docker login --username AWS --password-stdin $ECR_API_BASE_URL
+
+        - |
+          platforms bom \
+            --valint.sign \
+            --allow-failures \
+            ecr \
+            --image.mapping \
+                *scribe-service*::scribe-service::${SCRIBE_PRODUCT_VERSION}
+  
+
+  policy-ecr:
+    stage: policy
+    needs: ["bom-sign-ecr"] # "policy-gitlab" hack to win some time for the backend to process the SBOMs
+    timeout: 5 hours
+    image:
+        name: scribesecurity/platforms:${PLATFORMS_VERSION}
+        entrypoint: [""]
+        pull_policy: always
+    services:
+      - docker:dind
+    cache:
+      - key: ecr.platforms.db
+        paths:
+          - ecr.platforms.db
+      - key: evidence-ecr
+        paths:
+        - evidence/ecr
+    after_script:
+        - *cleanup-docker-cache
+        - *cleanup-evidence-cache
+        - *fs-info
+    before_script:
+        - *show_versions
+        - *init_signing_keys
+        - *fs-info
+        - export PLATFORMS_DB_PATH=ecr.platforms.db
+        - export VALINT_OUTPUT_DIRECTORY=evidence/ecr
+        - export VALINT_DISABLE_EVIDENCE_CACHE=true
+        - export LOG_LEVEL=DEBUG
+    script: 
+        - |
+          platforms verify \
+              --valint.bundle-branch main \
+              --valint.sign \
+              ecr \
+              --image.mapping \
+                *scribe-service*::scribe-service::${SCRIBE_PRODUCT_VERSION}
+
+    artifacts:
+      paths:
+        - evidence/ecr/*sarif*
+      expire_in: 1 week
+
+```
+</details>
+
 
 ## .gitignore
 It's recommended to add output directory value to your .gitignore file.
