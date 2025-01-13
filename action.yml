@@ -28,7 +28,7 @@ inputs:
     description: Skip Export evidence
 runs:
   using: docker
-  image: docker://scribesecurity/platforms:dev-latest
+  image: docker://scribesecurity/platforms:latest
   env:
     AUTO_FIX_ARGS: true
   args:
