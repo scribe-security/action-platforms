@@ -32,6 +32,7 @@ runs:
   env:
     AUTO_FIX_ARGS: true
   args:
+    - ${{ inputs.log-level && '--log-level=' }}${{ inputs.log-level}}
     - ${{ inputs.command }}
     - ${{ inputs.valint_args }}
     - ${{ inputs.sign && '--valint.sign' }}
