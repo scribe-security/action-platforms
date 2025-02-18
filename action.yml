@@ -15,7 +15,7 @@ inputs:
   args:
     description: "Additional arguments to pass to Platforms"
   log-level:
-    description: Log verbosity level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
+    description: Log verbosity level {DEBUG,INFO,WARNING,TRACE,ERROR,CRITICAL}
   log-file:
     description: Log file path
   config:
@@ -26,6 +26,8 @@ inputs:
     description: Local db path
   skip-evidence:
     description: Skip Export evidence
+  current:
+    description: scan current
 runs:
   using: docker
   image: docker://scribesecurity/platforms:dev-latest
@@ -37,6 +39,7 @@ runs:
     - ${{ inputs.valint_args }}
     - ${{ inputs.sign && '--valint.sign' }}
     - ${{ inputs.skip-evidence == 'true' && '--skip-evidence' || '' }}
+    - ${{ inputs.current == 'true' && '--current' || '' }}
     - ${{ inputs.command != 'discover' && '--valint.context-type=github' || '' }}
     - ${{ inputs.platform }}
     - ${{ inputs.args }} 
