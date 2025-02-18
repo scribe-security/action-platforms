@@ -30,7 +30,7 @@ inputs:
     description: scan current
 runs:
   using: docker
-  image: docker://scribesecurity/platforms:dev-latest
+  image: docker://scribesecurity/platforms:SH-7283-simplification
   env:
     AUTO_FIX_ARGS: true
   args:
