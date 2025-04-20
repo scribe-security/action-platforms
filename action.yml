@@ -26,9 +26,13 @@ inputs:
     description: Local db path
   skip-evidence:
     description: Skip Export evidence
+  hook-config:
+    description: Path to a hook configuration file
+  hook:
+    description: Select hook to run
 runs:
   using: docker
-  image: docker://scribesecurity/platforms:latest
+  image: docker://scribesecurity/platforms:SH-7615-3rd-party-tools
   env:
     AUTO_FIX_ARGS: true
   args:
@@ -40,7 +44,9 @@ runs:
     - ${{ inputs.command != 'discover' && '--valint.context-type=github' || '' }}
     - ${{ inputs.platform }}
     - ${{ inputs.args }} 
-  
+    - ${{ inputs.hook-config && '--hook-config=' }}${{ inputs.hook-config }}
+    - ${{ inputs.hook && '--hook=' }}${{ inputs.hook }}
+
 
 branding:
   icon: shield
