@@ -28,7 +28,7 @@ inputs:
     description: Skip Export evidence
 runs:
   using: docker
-  image: docker://scribesecurity/platforms:latest
+  image: docker://scribesecurity/platforms:sh-8208_trivy_hook_fixes
   env:
     AUTO_FIX_ARGS: true
   args:
