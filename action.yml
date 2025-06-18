@@ -26,6 +26,9 @@ inputs:
     description: Local db path
   skip-evidence:
     description: Skip Export evidence
+  slsa:
+    description: Generate SLSA provenance
+    default: false
 runs:
   using: docker
   image: docker://scribesecurity/platforms:dev-latest
@@ -40,6 +43,7 @@ runs:
     - ${{ inputs.command != 'discover' && '--valint.context-type=github' || '' }}
     - ${{ inputs.platform }}
     - ${{ inputs.args }} 
+    - ${{ inputs.slsa && '--valint.slsa-enable' }}
   
 
 branding:
