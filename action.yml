@@ -28,7 +28,7 @@ inputs:
     description: Skip Export evidence
   slsa:
     description: Generate SLSA provenance
-    default: false
+  
 runs:
   using: docker
   image: docker://scribesecurity/platforms:dev-latest
