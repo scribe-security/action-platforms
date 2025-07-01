@@ -43,7 +43,7 @@ runs:
     - ${{ inputs.command != 'discover' && '--valint.context-type=github' || '' }}
     - ${{ inputs.platform }}
     - ${{ inputs.args }} 
-    - ${{ inputs.slsa && '--valint.slsa-enable' }}
+    - ${{ inputs.slsa && '--slsa-enable' }}
   
 
 branding:
