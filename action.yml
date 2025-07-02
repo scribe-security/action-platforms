@@ -41,7 +41,7 @@ runs:
     - ${{ inputs.command }}
     - ${{ inputs.valint_args }}
     - ${{ inputs.sign && '--valint.sign' }}
-    - ${{ inputs.attest-default && '--valint.attest' }}${{ inputs.attest-default }}
+    - ${{ inputs.attest-default && '--valint.attest=' }}${{ inputs.attest-default }}
     - ${{ inputs.skip-evidence == 'true' && '--skip-evidence' || '' }}
     - ${{ inputs.command != 'discover' && '--valint.context-type=github' || '' }}
     - ${{ inputs.platform }}
