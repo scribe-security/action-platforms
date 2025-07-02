@@ -28,6 +28,8 @@ inputs:
     description: Skip Export evidence
   slsa:
     description: Generate SLSA provenance
+  attest-default:
+    description: Use default attestation (Default being x509-env)
   
 runs:
   using: docker
@@ -39,6 +41,7 @@ runs:
     - ${{ inputs.command }}
     - ${{ inputs.valint_args }}
     - ${{ inputs.sign && '--valint.sign' }}
+    - ${{ inputs.attest-default && '--valint.attest' }}${{ inputs.attest-default }}
     - ${{ inputs.skip-evidence == 'true' && '--skip-evidence' || '' }}
     - ${{ inputs.command != 'discover' && '--valint.context-type=github' || '' }}
     - ${{ inputs.platform }}
