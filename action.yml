@@ -30,6 +30,8 @@ inputs:
     description: Generate SLSA provenance
   attest-default:
     description: Use default attestation (Default being x509-env)
+  hook:
+    description: Specify hook IDs to execute
   
 runs:
   using: docker
@@ -47,6 +49,7 @@ runs:
     - ${{ inputs.platform }}
     - ${{ inputs.args }} 
     - ${{ inputs.slsa && '--slsa-enable' }}
+    - ${{ inputs.hook && '--hook=' }}${{ inputs.hook }}
   
 
 branding:
