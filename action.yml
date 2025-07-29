@@ -32,6 +32,8 @@ inputs:
     description: Use default attestation (Default being x509-env)
   hook:
     description: Specify hook IDs to execute
+  hook-config:
+    description: Path to a hook configuration file
   
 runs:
   using: docker
@@ -50,7 +52,8 @@ runs:
     - ${{ inputs.args }} 
     - ${{ inputs.slsa && '--slsa-enable' }}
     - ${{ inputs.hook && '--hook=' }}${{ inputs.hook }}
-  
+    - ${{ inputs.hook-config && '--hook-config=' }}${{ inputs.hook-config }}
+
 
 branding:
   icon: shield
