@@ -26,20 +26,34 @@ inputs:
     description: Local db path
   skip-evidence:
     description: Skip Export evidence
+  slsa:
+    description: Generate SLSA provenance
+  attest-default:
+    description: Use default attestation (Default being x509-env)
+  hook:
+    description: Specify hook IDs to execute
+  hook-config:
+    description: Path to a hook configuration file
+  
 runs:
   using: docker
-  image: docker://scribesecurity/platforms:latest
+  image: docker://ghcr.io/scribe-security/platforms:latest
   env:
     AUTO_FIX_ARGS: true
   args:
+    - ${{ inputs.log-level && '--log-level=' }}${{ inputs.log-level}}
     - ${{ inputs.command }}
     - ${{ inputs.valint_args }}
     - ${{ inputs.sign && '--valint.sign' }}
+    - ${{ inputs.attest-default && '--valint.attest=' }}${{ inputs.attest-default }}
     - ${{ inputs.skip-evidence == 'true' && '--skip-evidence' || '' }}
     - ${{ inputs.command != 'discover' && '--valint.context-type=github' || '' }}
     - ${{ inputs.platform }}
     - ${{ inputs.args }} 
-  
+    - ${{ inputs.slsa && '--slsa-enable' }}
+    - ${{ inputs.hook && '--hook=' }}${{ inputs.hook }}
+    - ${{ inputs.hook-config && '--hook-config=' }}${{ inputs.hook-config }}
+
 
 branding:
   icon: shield
